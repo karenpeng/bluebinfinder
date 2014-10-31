@@ -1,0 +1,24 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1 user-scalable = no">
+  <link rel="stylesheet" type="text/css" href="css/style.css"/>
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+</head>
+<body>
+<div id="setting">
+    <div id="dpad">
+     <div id="up" onclick="up()"></div>
+     <div id="left" onclick="left()"></div>
+     <div id="middle"></div>
+     <div id="right" onclick="right()"></div>
+     <div id="down" onclick="down()"></div>
+    </div>
+    <p>First Name:</p>
+    <input id="firstNameSet" class="name" type="text"></input>
+    <p>Last Name:</p>
+    <input id="lastNameSet" class="name" type="text"></input>
+    <p id="setButton" onclick ="makeRecord()">set</p>
+</div>
+</body>
+</html>
+<script type="text/javascript" src="js/request.js"></script>
