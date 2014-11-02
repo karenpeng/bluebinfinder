@@ -9,6 +9,7 @@ var socketServer = new WebSocketServer({
 var mongoose = require('mongoose');
 var Record = require('./dbmodel.js');
 var config = require("./config.json");
+var sio = null;
 
 //you have to define an empty object first b/c otherwise you can't add key in it
 //var records = {};
@@ -64,42 +65,47 @@ app.get('/record/:firstname/:lastname/:xvalue/:yvalue', function (req, res) {
   });
 });
 
+app.get('/position/:axis/:value', function (req, res) {
+  //if (wsConnection) {
+  console.log('from web client ' + req.params.axis + ' ' + req.params.value);
+  if (sio !== null) {
+    sio.send(req.params.axis + '/' + req.params.value);
+  }
+  //}
+});
+
+app.get('/record/:firstname/:lastname', function (req, res) {
+  //if (wsConnection) {
+  var key = req.params.firstname.trim().toLowerCase() + req.params.lastname.trim().toLowerCase();
+  var query = {
+    'name': key
+  };
+  var select = "x y";
+  var option = {
+    limit: 1,
+    sort: {
+      'name': 1
+    }
+  };
+  Record.findOne(query, select, option, function (err, data) {
+    if (err) {
+      return console.error(err);
+    }
+    if (data !== null) {
+      console.log("asking data from " + data);
+      if (sio !== null) {
+        sio.send(data.x + '/' + data.y);
+      }
+    }
+  });
+});
+
 //var wsConnection = false;
 // listen for new socket.io connections:
 socketServer.on('connection', function (socket) {
   // send something to the web client with the data:
   //wsConnection = true;
-  app.get('/position/:axis/:value', function (req, res) {
-    //if (wsConnection) {
-    console.log('from web client ' + req.params.axis + ' ' + req.params.value);
-    socket.send(req.params.axis + '/' + req.params.value);
-    //}
-  });
-
-  app.get('/record/:firstname/:lastname', function (req, res) {
-    //if (wsConnection) {
-    var key = req.params.firstname.trim().toLowerCase() + req.params.lastname.trim().toLowerCase();
-    var query = {
-      'name': key
-    };
-    var select = "x y";
-    var option = {
-      limit: 1,
-      sort: {
-        'name': 1
-      }
-    };
-    Record.findOne(query, select, option, function (err, data) {
-      if (err) {
-        return console.error(err);
-      }
-      if (data !== null) {
-        console.log("asking data from " + data);
-        socket.send(data.x + '/' + data.y);
-      }
-    });
-  });
-
+  sio = socket;
   // if the client sends you data, act on it:
   socket.on('message', function (data) {
     console.log('received from yun: ' + data);
