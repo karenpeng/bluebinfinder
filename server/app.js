@@ -6,12 +6,14 @@ var WebSocketServer = require('ws').Server;
 var socketServer = new WebSocketServer({
   server: server
 });
+var mongoose = require('mongoose');
+var Record = require('./dbmodel.js');
 var config = require("./config.json");
 
 //you have to define an empty object first b/c otherwise you can't add key in it
-var records = {};
+//var records = {};
 
-server.listen(4000);
+server.listen(process.env.PORT || 4000);
 
 // Set up the view directory
 app.set("views", __dirname);
@@ -26,6 +28,14 @@ app.get('/', function (req, res) {
   res.render('index.html');
 });
 
+mongoose.connect(config.key);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function callback() {
+  // yay!
+  console.log('yay!');
+});
+
 app.get('/set', function (req, res) {
   res.render('set.html');
 });
@@ -36,15 +46,22 @@ app.get('/find', function (req, res) {
 
 app.get('/record/:firstname/:lastname/:xvalue/:yvalue', function (req, res) {
   //save it
-  //TODO: hook up a database later
-  var key = req.params.firstname + req.params.lastname;
-  console.log(key);
-  records.key = {
+  // var key = req.params.firstname + req.params.lastname;
+  // console.log(key);
+  // records.key = {
+  //   'x': req.params.xvalue,
+  //   'y': req.params.yvalue
+  // };
+  // console.log(records.key);
+  // console.log("save data " + records.key);
+  var record = new Record({
+    'name': req.params.firstname.trim().toLowerCase() + req.params.lastname.trim().toLowerCase(),
     'x': req.params.xvalue,
     'y': req.params.yvalue
-  };
-  console.log(records.key);
-  console.log("save data " + records.key);
+  });
+  record.save(function (err) {
+    if (err) return console.error(err);
+  });
 });
 
 //var wsConnection = false;
@@ -61,14 +78,26 @@ socketServer.on('connection', function (socket) {
 
   app.get('/record/:firstname/:lastname', function (req, res) {
     //if (wsConnection) {
-    var key = req.params.firstname + req.params.lastname;
-    if (records.key !== undefined) {
-      console.log("asking data from " + records.key);
-      socket.send(records.key.x + '/' + records.key.y);
-    }
-    //}
-    //if you can't find it, show it on the web client
-
+    var key = req.params.firstname.trim().toLowerCase() + req.params.lastname.trim().toLowerCase();
+    var query = {
+      'name': key
+    };
+    var select = "x y";
+    var option = {
+      limit: 1,
+      sort: {
+        'name': 1
+      }
+    };
+    Record.findOne(query, select, option, function (err, data) {
+      if (err) {
+        return console.error(err);
+      }
+      if (data !== null) {
+        console.log("asking data from " + data);
+        socket.send(data.x + '/' + data.y);
+      }
+    });
   });
 
   // if the client sends you data, act on it:

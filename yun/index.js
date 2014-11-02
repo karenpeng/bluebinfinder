@@ -1,5 +1,5 @@
-var WebSocket = require('ws');
-var ws = new WebSocket('ws://localhost:4000');
+var webSocket = require('ws');
+var ws = new webSocket('ws://localhost:4000');
 ws.on('open', function () {
   //serialPort.write('N');
 });
