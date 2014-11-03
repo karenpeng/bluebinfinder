@@ -73,7 +73,7 @@ void loop()
       int value = Serial.parseInt();
       Serial.println(currentPin);
       Serial.println(value);
-      //value = map(value, 0, 1000, 0, 255);
+      value = map(value, 0, 1000, 0, 255);
       analogWrite(currentPin, value);
     }
   }
