@@ -1,6 +1,6 @@
 var WebSocket = require('faye-websocket');
-//var ws = new WebSocket.Client('ws://128.122.6.143:4000');
-var ws = new WebSocket.Client('ws://bluebinfinder.herokuapp.com');
+var ws = new WebSocket.Client('ws://128.122.6.143:4000');
+//var ws = new WebSocket.Client('ws://bluebinfinder.herokuapp.com');
 
 ws.on('open', function (event) {
   console.log('O');
@@ -10,7 +10,7 @@ ws.on('open', function (event) {
 ws.on('message', function (event) {
   //console.log('message', event.data);
   var message = event.data;
-  console.log('received: %s', message);
+  //console.log('received: %s', message);
 
   var subMessage = message.split('/');
   var test = parseInt(subMessage[0]);
