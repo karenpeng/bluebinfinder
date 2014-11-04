@@ -1,15 +1,12 @@
 var express = require("express");
 var app = express();
 var ejs = require("ejs");
-var server = require('http').createServer(app);
-var WebSocketServer = require('ws').Server;
-var socketServer = new WebSocketServer({
-  server: server
-});
+var WebSocket = require('faye-websocket');
+var http = require('http');
+var server = http.createServer();
 var mongoose = require('mongoose');
 var Record = require('./dbmodel.js');
 var config = require("./config.json");
-var sio = null;
 
 //you have to define an empty object first b/c otherwise you can't add key in it
 //var records = {};
@@ -100,16 +97,20 @@ app.get('/record/:firstname/:lastname', function (req, res) {
   });
 });
 
-//var wsConnection = false;
-// listen for new socket.io connections:
-socketServer.on('connection', function (socket) {
-  // send something to the web client with the data:
-  //wsConnection = true;
-  sio = socket;
-  // if the client sends you data, act on it:
-  socket.on('message', function (data) {
-    console.log('received from yun: ' + data);
-  });
+server.on('upgrade', function (request, socket, body) {
+  if (WebSocket.isWebSocket(request)) {
+    var ws = new WebSocket(request, socket, body);
+
+    ws.on('message', function (event) {
+      console.log('received from yun: ' + event.data);
+      //ws.send(event.data);
+    });
+
+    ws.on('close', function (event) {
+      console.log('close', event.code, event.reason);
+      ws = null;
+    });
+  }
 });
 
 //TODO:make a task que
