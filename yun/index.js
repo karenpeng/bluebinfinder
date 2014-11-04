@@ -1,5 +1,6 @@
 var WebSocket = require('faye-websocket');
-var ws = new WebSocket.Client('ws://bluebinfinder.herokuapp.com');
+var ws = new WebSocket.Client('ws://128.122.6.143:4000');
+//var ws = new WebSocket.Client('ws://bluebinfinder.herokuapp.com');
 
 // var serialport = require("serialport");
 // var SerialPort = require("serialport").SerialPort;
@@ -26,7 +27,7 @@ var ws = new WebSocket.Client('ws://bluebinfinder.herokuapp.com');
 // });
 
 ws.on('open', function (event) {
-  console.log('open');
+  //console.log('open');
   ws.send('Hello, world!');
 });
 

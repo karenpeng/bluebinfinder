@@ -3,10 +3,11 @@ var app = express();
 var ejs = require("ejs");
 var WebSocket = require('faye-websocket');
 var http = require('http');
-var server = http.createServer();
+var server = http.createServer(app);
 var mongoose = require('mongoose');
 var Record = require('./dbmodel.js');
 var config = require("./config.json");
+var ws = null;
 
 //you have to define an empty object first b/c otherwise you can't add key in it
 //var records = {};
@@ -65,8 +66,8 @@ app.get('/record/:firstname/:lastname/:xvalue/:yvalue', function (req, res) {
 app.get('/position/:axis/:value', function (req, res) {
   //if (wsConnection) {
   console.log('from web client ' + req.params.axis + ' ' + req.params.value);
-  if (sio !== null) {
-    sio.send(req.params.axis + '/' + req.params.value);
+  if (ws !== null) {
+    ws.send(req.params.axis + '/' + req.params.value);
   }
   //}
 });
@@ -90,8 +91,8 @@ app.get('/record/:firstname/:lastname', function (req, res) {
     }
     if (data !== null) {
       console.log("asking data from " + data);
-      if (sio !== null) {
-        sio.send(data.x + '/' + data.y);
+      if (ws !== null) {
+        ws.send(data.x + '/' + data.y);
       }
     }
   });
@@ -99,7 +100,7 @@ app.get('/record/:firstname/:lastname', function (req, res) {
 
 server.on('upgrade', function (request, socket, body) {
   if (WebSocket.isWebSocket(request)) {
-    var ws = new WebSocket(request, socket, body);
+    ws = new WebSocket(request, socket, body);
 
     ws.on('message', function (event) {
       console.log('received from yun: ' + event.data);
